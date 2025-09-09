@@ -203,6 +203,7 @@ def launch_viewer(volume, title= "3D Volume Slice Viewer"):
     root = tk.Tk()
     app = SliceViewer3D(root, volume, title=title)
     root.mainloop()
+ 
 
 
 def main():

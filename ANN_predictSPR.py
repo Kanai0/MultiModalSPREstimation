@@ -58,20 +58,25 @@ A_arr = np.array([1.00784, 12.0096, 14.00643, 15.99903, 22.98976, 24.304, 28.085
 Z_arr = np.array([1,6,7,8,11,12,14,15,16,17,19,20,26,53,18], dtype=np.float32)
 
 # --- ハイパーパラメータ ---
-delta = 1e-6    # 1: physics-constrained loss, 0: standard loss
-n_vox_batch = 262144 # 512*512
+delta = 1.0e-6    # 1: physics-constrained loss, 0: standard loss
+n_vox_batch = 16384 
 train_slc = slice(0, 40) # training slices
 val_slc   = slice(40, 50) # validation slices
 print("Loading images...")
 par_dir = r'C:/Users/Kanai/Synology/TWMU/0_張先生_共同研究_MRI阻止能/FromIzo/data_summarized/'
 
 # input data
-ct_e1 = np.load(par_dir + 'simCT_80kVp.npy') 
-ct_e2 = np.load(par_dir + 'simCT_120kVp.npy') 
-ct_e3 = np.load(par_dir + 'simCT_140kVp.npy') 
-mr_pd = np.load(par_dir + 'mr_pd.npy')
-mr_pdw = np.load(par_dir + 'mr_pdw.npy')
-wf = np.load(par_dir + 'wf.npy')
+ct_e1 = np.load(par_dir + 'simCT_80kVp.npy').astype(np.float32) 
+ct_e2 = np.load(par_dir + 'simCT_120kVp.npy').astype(np.float32) 
+ct_e3 = np.load(par_dir + 'simCT_140kVp.npy').astype(np.float32)
+mr_pd = np.load(par_dir + 'mr_pd.npy').astype(np.float32)
+mr_pdw = np.load(par_dir + 'mr_pdw.npy').astype(np.float32)
+wf = np.load(par_dir + 'wf.npy').astype(np.float32)
+
+# normalize data
+ct_e1 = ct_e1 - 1000
+ct_e2 = ct_e2 - 1000
+ct_e3 = ct_e3 - 1000
 
 # ground truth
 rho_gt = np.load(par_dir + 'rho_elem.npy')
@@ -108,6 +113,12 @@ y = np.stack([rho_gt.ravel().astype(np.float32),
 history = model.fit(
     X_train, Y_train,
     validation_data=(X_val, Y_val),
-    epochs=5, batch_size=n_vox_batch, shuffle=True,
+    epochs=20, batch_size=n_vox_batch, shuffle=True,
     callbacks=[LiveLossPlotter()]
 )
+
+Y_pred = model.predict(X_val, batch_size=n_vox_batch)
+Y_pred = Y_pred.reshape(10,512,512)  # (N,4) -> (D,H,W,4)
+Y_val = Y_val.reshape(10,512,512,4)
+launch_viewer(Y_pred)
+launch_viewer(rho_gt[val_slc])
