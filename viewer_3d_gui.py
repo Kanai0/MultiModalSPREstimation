@@ -30,6 +30,14 @@ class SliceViewer3D:
         self.vmin = tk.DoubleVar(value=self.min_val)
         self.vmax = tk.DoubleVar(value=self.max_val)
 
+        # Colorbar handles (one per view)
+        self.cb1 = None
+        self.cb2 = None
+        self.cb3 = None
+
+        # Save settings
+        self.save_dpi = 300
+
         self.setup_ui()
         self.update_images()
 
@@ -97,6 +105,10 @@ class SliceViewer3D:
 #        self.vmax_entry.insert(tk.END, str(self.max_val))
         self.vmax_entry.bind('<Return>', lambda e: self.update_images())
 
+        # Save PNG button (bottom left)
+        self.save_btn = tk.Button(self.master, text="Save PNG", command=self.save_png)
+        self.save_btn.grid(row=4, column=0, sticky='w')
+
     def update_images(self):
         try:
             vmin = float(self.vmin_entry.get())
@@ -105,22 +117,83 @@ class SliceViewer3D:
             print("数値を入力してください")
             return
     
+        # Clear previous content and colorbars
         self.ax1.clear()
-        self.ax1.imshow(self.volume[self.axial_idx, :, :], cmap='gray', vmin=vmin, vmax=vmax)
+        if self.cb1 is not None:
+            try:
+                self.cb1.remove()
+            except Exception:
+                pass
+            self.cb1 = None
+
+        im1 = self.ax1.imshow(self.volume[self.axial_idx, :, :], cmap='gray', vmin=vmin, vmax=vmax)
         self.ax1.set_title(f'Axial: {self.axial_idx}')
         self.ax1.axis('off')
+        self.cb1 = self.fig.colorbar(im1, ax=self.ax1, fraction=0.046, pad=0.04)
+        # Show only min/max on the colorbar
+        if vmin == vmax:
+            self.cb1.set_ticks([vmin])
+            self.cb1.set_ticklabels([f"{vmin:g}"])
+        else:
+            self.cb1.set_ticks([vmin, vmax])
+            self.cb1.set_ticklabels([f"{vmin:g}", f"{vmax:g}"])
     
         self.ax2.clear()
-        self.ax2.imshow(self.volume[:, self.coronal_idx, :], cmap='gray', vmin=vmin, vmax=vmax)
+        if self.cb2 is not None:
+            try:
+                self.cb2.remove()
+            except Exception:
+                pass
+            self.cb2 = None
+
+        im2 = self.ax2.imshow(self.volume[:, self.coronal_idx, :], cmap='gray', vmin=vmin, vmax=vmax)
         self.ax2.set_title(f'Coronal: {self.coronal_idx}')
         self.ax2.axis('off')
+        self.cb2 = self.fig.colorbar(im2, ax=self.ax2, fraction=0.046, pad=0.04)
+        if vmin == vmax:
+            self.cb2.set_ticks([vmin])
+            self.cb2.set_ticklabels([f"{vmin:g}"])
+        else:
+            self.cb2.set_ticks([vmin, vmax])
+            self.cb2.set_ticklabels([f"{vmin:g}", f"{vmax:g}"])
     
         self.ax3.clear()
-        self.ax3.imshow(self.volume[:, :, self.sagittal_idx], cmap='gray', vmin=vmin, vmax=vmax)
+        if self.cb3 is not None:
+            try:
+                self.cb3.remove()
+            except Exception:
+                pass
+            self.cb3 = None
+
+        im3 = self.ax3.imshow(self.volume[:, :, self.sagittal_idx], cmap='gray', vmin=vmin, vmax=vmax)
         self.ax3.set_title(f'Sagittal: {self.sagittal_idx}')
         self.ax3.axis('off')
-    
-        self.canvas.draw()
+        self.cb3 = self.fig.colorbar(im3, ax=self.ax3, fraction=0.046, pad=0.04)
+        if vmin == vmax:
+            self.cb3.set_ticks([vmin])
+            self.cb3.set_ticklabels([f"{vmin:g}"])
+        else:
+            self.cb3.set_ticks([vmin, vmax])
+            self.cb3.set_ticklabels([f"{vmin:g}", f"{vmax:g}"])
+
+        self.fig.tight_layout()
+        self.canvas.draw_idle()
+
+    def save_png(self):
+        # Ask path and save the entire viewer figure as PNG
+        path = filedialog.asksaveasfilename(
+            title="Save viewer as PNG",
+            defaultextension=".png",
+            filetypes=[("PNG Image", "*.png")]
+        )
+        if not path:
+            return
+        try:
+            self.fig.tight_layout()
+            self.fig.savefig(path, dpi=self.save_dpi, bbox_inches='tight')
+            self.status_label.config(text=f"Saved: {path}")
+        except Exception as e:
+            self.status_label.config(text=f"Save failed: {e}")
         
     def on_axial_change(self, val):
         self.axial_idx = int(val)

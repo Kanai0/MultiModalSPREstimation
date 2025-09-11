@@ -16,16 +16,11 @@ import inspect
 import sys
 matplotlib.use("TkAgg")   # ここで指定（pyplotより前）
 import matplotlib.pyplot as plt
-from viewer_3d_gui import SliceViewer3D
+from viewer_3d_gui import launch_viewer
 from ANNmodel import build_full_model, HybridLoss, compute_zn_volume
 import tensorflow as tf
 from tensorflow.keras import optimizers
 from tensorflow.keras.callbacks import Callback, CSVLogger
-
-def launch_viewer(volume, title= "3D Volume Slice Viewer"):
-    root = tk.Tk()
-    app = SliceViewer3D(root, volume, title=title)
-    root.mainloop()
 
 
 class LiveLossPlotter(Callback):
