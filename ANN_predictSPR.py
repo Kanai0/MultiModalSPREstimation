@@ -29,7 +29,7 @@ def launch_viewer(volume, title= "3D Volume Slice Viewer"):
 
 
 class LiveLossPlotter(Callback):
-    def __init__(self, with_val=True, save_dir=None, fname="loss_curve.jpg", dpi=150):
+    def __init__(self, with_val=True, save_dir=None, fname="loss_curve.png", dpi=150):
         super().__init__()
         self.tr, self.va = [], []
         self.with_val = with_val
@@ -198,7 +198,7 @@ except Exception as e:
 history = model.fit(
     X_train, Y_train,
     validation_data=(X_val, Y_val),
-    epochs=20, batch_size=n_vox_batch, shuffle=True,
+    epochs=1, batch_size=n_vox_batch, shuffle=True,
     callbacks=[
         LiveLossPlotter(save_dir=run_dir),                 # ← ここを修正
         CSVLogger(os.path.join(run_dir, "history.csv"), append=False),
