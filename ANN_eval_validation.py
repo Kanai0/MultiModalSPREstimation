@@ -53,8 +53,8 @@ def compute_ct_from_rho(rho_pred, z362, z186):
 
 
 
-model_dir = r"C:/Users/Kanai/Desktop/MRtoSPR/Chang_Results/ANN_20250911_1118/"
-model_path = model_dir + r"model_epoch_0020.h5"
+model_dir = r"C:/Users/Kanai/Desktop/MRtoSPR/Chang_Results/ANN_20250915_1539_delta_1e-6/"
+model_path = model_dir + r"model_final.h5"
 data_dir = r'C:/Users/Kanai/Synology/TWMU/0_張先生_共同研究_MRI阻止能/FromIzo/data_summarized/'
 val_slc = slice(40, 50)
 batch_size = 16384
@@ -187,7 +187,7 @@ d_all, h, w = ct_e1.shape
 d_val = val_slc.stop - val_slc.start
 pred_vol = y_pred.reshape(d_val, h, w)
 true_vol = rho_true.reshape(d_val, h, w)
-np.save(os.path.join(out_dir, 'rho_pred_val.npy'), pred_vol)
-np.save(os.path.join(out_dir, 'rho_true_val.npy'), true_vol)
-np.save(os.path.join(out_dir, 'ct_pred_from_rho_val.npy'), ct_pred.reshape(d_val, h, w))
-np.save(os.path.join(out_dir, 'ct_true_val.npy'), ct_true.reshape(d_val, h, w))
+np.save(os.path.join(out_dir, 'rho_pred_vol.npy'), pred_vol)
+np.save(os.path.join(out_dir, 'rho_true_vol.npy'), true_vol)
+np.save(os.path.join(out_dir, 'ct_pred_from_rho_vol.npy'), ct_pred.reshape(d_val, h, w))
+np.save(os.path.join(out_dir, 'ct_true_vol.npy'), ct_true.reshape(d_val, h, w))

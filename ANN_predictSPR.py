@@ -87,7 +87,11 @@ class LiveLossPlotter(Callback):
             out_path = os.path.join(self.save_dir, self.fname)
             self.fig.savefig(out_path, dpi=self.dpi, bbox_inches="tight")
         plt.ioff()
-        plt.show()
+        # 非ブロッキング表示（スクリプトをブロックしない）
+        try:
+            plt.show(block=False)
+        except TypeError:
+            plt.show()
 
 class EpochIntervalSaver(Callback):
     def __init__(self, save_dir, every=5):
@@ -116,7 +120,7 @@ A_arr = np.array([1.00784, 12.0096, 14.00643, 15.99903, 22.98976, 24.304, 28.085
 Z_arr = np.array([1,6,7,8,11,12,14,15,16,17,19,20,26,53,18], dtype=np.float32)
 
 # --- ハイパーパラメータ ---
-delta = 0    # 1: physics-constrained loss, 0: standard loss
+delta = 1.0e-6    # 1: physics-constrained loss, 0: standard loss
 n_vox_batch = 16384 
 epochs = 20
 save_every = 5 # epochs to save model
@@ -193,7 +197,7 @@ except Exception as e:
 history = model.fit(
     X_train, Y_train,
     validation_data=(X_val, Y_val),
-    epochs=1, batch_size=n_vox_batch, shuffle=True,
+    epochs=epochs, batch_size=n_vox_batch, shuffle=True,
     callbacks=[
         LiveLossPlotter(save_dir=run_dir),                 # ← ここを修正
         CSVLogger(os.path.join(run_dir, "history.csv"), append=False),
